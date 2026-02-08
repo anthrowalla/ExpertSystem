@@ -243,7 +243,11 @@ public class ExpertSystem extends Applet {
         } catch(StringIndexOutOfBoundsException e) {}
 
         try {
-            documentBase = new URL("file:///" + p + "/");
+            String path = p.toString();
+            if (path.startsWith("/"))
+                documentBase = new URL("file://" + path + "/");
+            else
+                documentBase = new URL("file:///" + path + "/");
         } catch (java.net.MalformedURLException e) {
         }
 	}

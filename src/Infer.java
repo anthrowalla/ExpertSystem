@@ -230,13 +230,15 @@ class ELEMENT_T extends Object {
 
 
 public class Infer extends Thread {
-				
+
 	public String progname;
 	public RULE_T Rule[];
 	public int nrules = 0;
 	public RULE_T why[];
 	public PropHash pHash;
-	
+
+	public volatile boolean exitRequested = false;
+
 	public int nwhy = 0;
 	public Str SP = null;
 	public int Verbose=0;
@@ -295,7 +297,7 @@ public class Infer extends Thread {
 
 	void doexit()
 	{
-		this.stop();
+		exitRequested = true;
 	}
 
 	
@@ -304,18 +306,18 @@ public class Infer extends Thread {
 	    int proved= FALSE;
 		ELEMENT_T e;
 		RULE_T.nrules = nrules;
-		if (theAsker == null) doexit(); // or false?!
+		if (theAsker == null) { doexit(); return; } // or false?!
 		// super.start();
-	    for (i = 0; i < nrules; i++) {      /* verify each CON */
+	    for (i = 0; i < nrules && !exitRequested; i++) {      /* verify each CON */
 			if (Rule[i] == null || Rule[i].con == null) {
 				if (Rule[i] == null) {
 					fld.printfld ("%s: RULE %d is null!!\n", progname, i);
-					doexit();
+					doexit(); break;
 				}
 				if (Rule[i].ant == null) {
 				    fld.printfld ("%s: RULE %d has no Conditions and draws no Conclusions:\n", progname, i);
 				    prrule (Rule[i], fld.printOut(false));
-				    doexit();
+				    doexit(); break;
 				}
 				if ((Rule[i].ant.type & ASK) != 0) {
 					for (e = Rule[i].ant; e != null; e = e.next) {
@@ -324,7 +326,7 @@ public class Infer extends Thread {
 				} else {
 					fld.printfld ("%s: RULE %d draws no Conclusions:\n", progname, i);
 				    prrule (Rule[i], fld.printOut(false));
-				    doexit();
+				    doexit(); break;
 				}
 				continue;
 			}
@@ -350,7 +352,7 @@ public class Infer extends Thread {
 					}
 				} */
 				continue;
-			} 
+			}
 		//	if (TRUTHVALUE (Rule[i].con) == TRUE) // assume this rule has flown before
 			//    continue; // Change to allCONS! some may be undone!!!!!!
 			if (false) { // no op
@@ -368,8 +370,8 @@ public class Infer extends Thread {
 			    Rule[i].setConclusions(fld);
 			}
 	    }
-	    
-	    if (proved == FALSE) {
+
+	    if (!exitRequested && proved == FALSE) {
 			fld.printfld ("I can't prove anything!!!\n");
 			fld.printfld("\n");
 		}
@@ -382,7 +384,8 @@ public class Infer extends Thread {
 	{
 	    ELEMENT_T e,h;
 	    int i;
-	
+
+	if (exitRequested) return false;
 	if (rule == null) return false;
 		// have already checked to see rule is worth doing. some unknown consequence
 		
@@ -472,7 +475,7 @@ int anytrue = 0;
 		theAsker.setQuestion(question,b1,b2);
 		try {
 			sleep(100);
-			while (theAsker.ReadyEnd() == false) sleep(10);
+			while (theAsker.ReadyEnd() == false && !exitRequested) sleep(10);
 		} catch (Exception e){};
 		return theAsker.getAnswer();
 	}
@@ -480,9 +483,9 @@ int anytrue = 0;
 	int askval (ELEMENT_T e) {
 	    String line="";
 	    int value;
-	    
+
 	    value = UNKNOWN;
-	    for (;;) {
+	    for (;!exitRequested;) {
 	    	fld.printfld("%s?", e.str.p);
 			line = fld.printOut(false);
 			// fld.printfld(line);
@@ -494,19 +497,19 @@ int anytrue = 0;
 			case 'y':
 			case 't':
 				//if (e.type & NOT)  value = FALSE;
-			   // else 
+			   // else
 			    value = TRUE;
 			    break;
 			case 'n':
 			case 'f':
 			  //  if (e.type & NOT) value = TRUE;
-			  //  else 
+			  //  else
 			  value = FALSE;
 			    break;
 			case 'q':
 			    fld.printfld ("OK, Bye!\n");
 			    doexit();
-			    break;
+			    return FALSE;
 			case 'w':
 			    showwhy ();
 			    continue;

@@ -162,12 +162,19 @@ public class AskMe extends Panel
 		gcon.weighty = .5;
 		gLayout.setConstraints(quitButton,gcon);
 	
-		yesButton.disable();
-		noButton.disable();
+		yesButton.setEnabled(false);
+		noButton.setEnabled(false);
 		validate();
 		inited = true;
 		SymItem lSymItem = new SymItem();
 		optionList.addItemListener(lSymItem);
+
+		// Register ActionListeners for buttons (AWT 1.1 event model)
+		SymAction lSymAction = new SymAction();
+		yesButton.addActionListener(lSymAction);
+		noButton.addActionListener(lSymAction);
+		whyButton.addActionListener(lSymAction);
+		quitButton.addActionListener(lSymAction);
 
 	}
 	
@@ -194,8 +201,8 @@ public class AskMe extends Panel
 	}
 
 	public String getAnswer() {
-		yesButton.disable();
-		noButton.disable();
+		yesButton.setEnabled(false);
+		noButton.setEnabled(false);
 		return theAnswer;
 	}
 
@@ -208,12 +215,12 @@ public class AskMe extends Panel
 	public void setQuestion(String theQuestion, String bTrue, String bFalse) {
 		this.theQuestion = theQuestion;
 		label3D1.setText(theQuestion);
-		optionList.disable();
+		optionList.setEnabled(false);
 		optionList.removeAll();
 		theAnswer = null;
-		yesButton.enable();
+		yesButton.setEnabled(true);
 		yesButton.setLabel(bTrue);
-		noButton.enable();
+		noButton.setEnabled(true);
 		noButton.setLabel(bFalse);
 		this.repaint();
 	}
@@ -222,13 +229,13 @@ public class AskMe extends Panel
 		this.theQuestion = theQuestion;
 		label3D1.setText(theQuestion);
 		theAnswer = null;
-		yesButton.disable();
+		yesButton.setEnabled(false);
 		yesButton.setLabel("Use menu");
-		noButton.disable();
+		noButton.setEnabled(false);
 		noButton.setLabel("use menu");
 		this.repaint();
 		optionList.removeAll();
-		optionList.enable();
+		optionList.setEnabled(true);
 		for(int i=0;i<choices.size();i++) {
 			optionList.addItem((String) choices.elementAt(i));
 		}
@@ -250,52 +257,17 @@ public class AskMe extends Panel
 		theAnswer = event.getItem().toString();
 	}
 
-	public boolean handleEvent(Event event) {
-		if (event.target == yesButton && event.id == Event.ACTION_EVENT) {
-			yesButton_Clicked(event);
-			return true;
-		} else 	if (event.target == noButton && event.id == Event.ACTION_EVENT) {
-			noButton_Clicked(event);
-			return true;
-		} else 	if (event.target == whyButton && event.id == Event.ACTION_EVENT) {
-			whyButton_Clicked(event);
-			return true;
-		}else 	if (event.target == quitButton && event.id == Event.ACTION_EVENT) {
-			quitButton_Clicked(event);
-			return true;
-		}/* else 	if (event.target == optionList && event.id == Event.ACTION_EVENT) {
-			choice_Action((java.awt.event.ItemEvent) event);
-			return true;
-		}*/
-
-		return super.handleEvent(event);
-	}
-	
-	void yesButton_Clicked(Event event) {
-		//{{CONNECTION
+	void yesButton_Clicked() {
 		theAnswer = "Yes";
-		//}}
 	}
-	void noButton_Clicked(Event event) {
-
-			 
-		//{{CONNECTION
+	void noButton_Clicked() {
 		theAnswer = "No";
-		//}}
 	}
-	void whyButton_Clicked(Event event) {
-
-			 
-		//{{CONNECTION
+	void whyButton_Clicked() {
 		theAnswer = "Why";
-		//}}
 	}
-	void quitButton_Clicked(Event event) {
-
-			 
-		//{{CONNECTION
+	void quitButton_Clicked() {
 		theAnswer = "Quit";
-		//}}
 	}
 
 	public void update() {
@@ -314,7 +286,23 @@ public class AskMe extends Panel
 		return new Dimension(350,60);
 	}
 	
-		class SymItem implements java.awt.event.ItemListener
+	class SymAction implements java.awt.event.ActionListener
+	{
+		public void actionPerformed(java.awt.event.ActionEvent event)
+		{
+			Object object = event.getSource();
+			if (object == yesButton)
+				yesButton_Clicked();
+			else if (object == noButton)
+				noButton_Clicked();
+			else if (object == whyButton)
+				whyButton_Clicked();
+			else if (object == quitButton)
+				quitButton_Clicked();
+		}
+	}
+
+	class SymItem implements java.awt.event.ItemListener
 	{
 		public void itemStateChanged(java.awt.event.ItemEvent event)
 		{

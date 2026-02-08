@@ -94,22 +94,25 @@ public class URLData // extends Thread
 		//if (done == true) return;
 		openURL();
 		readAll();
-		try { 
-			theStream.close();
-		} catch (java.io.IOException e) {}
+		if (theStream != null) {
+			try {
+				theStream.close();
+			} catch (java.io.IOException e) {}
+		}
 		done = true;
 	}
 	
 	String baseContext(URL context) {
 		String p = context.toString();
-		//System.out.println(p.substring(0,6));
-		if (p.substring(0,6).equals("file:/")) {
-			p = "file:///"+p.substring(6,p.length());
+		// Normalize file:/ URLs to file:/// form
+		if (p.startsWith("file:///")) {
+			// already correct, do nothing
+		} else if (p.startsWith("file:/")) {
+			p = "file:///" + p.substring(6);
 		}
 		int k = p.lastIndexOf('/'); // change to system separater!
-		//System.out.println(p);
-		
+
 		return(p.substring(0,k+1));
-		
+
 	}
 }

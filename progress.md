@@ -47,12 +47,41 @@ Java rule-based expert system (circa 1995-2005). 11 source files in `src/`, no p
 - **Problem:** `ourThread.sleep(5)` references an uninitialized `Thread` field. Java allows static method calls on null references, but the code is misleading and fragile.
 - **Fix:** Changed to `Thread.sleep(5)`.
 
+### 8. AskMe buttons unresponsive on Java 17 (AWT 1.0 event model + deprecated enable/disable)
+- **File:** `src/AskMe.java`
+- **Severity:** Critical — True/False/Why/Stop buttons completely non-functional
+- **Problem:** Two issues combined: (1) Button clicks were handled via the deprecated `handleEvent(Event)` with `Event.ACTION_EVENT` checks (AWT 1.0 model). On Java 17, these events no longer propagate reliably for Button components. (2) `yesButton.enable()` / `yesButton.disable()` are deprecated and don't reliably re-enable ActionEvent delivery on modern Java. Both issues together made the consultation UI completely unresponsive.
+- **Fix:** Replaced `handleEvent()` with proper `ActionListener` registrations on all four buttons via a new `SymAction` inner class. Replaced all `enable()`/`disable()` calls with `setEnabled(true)`/`setEnabled(false)`.
+
+### 9. Thread.stop() throws UnsupportedOperationException on Java 17
+- **File:** `src/Infer.java:296-299`
+- **Severity:** Critical — crashes the inference engine on exit/quit
+- **Problem:** `doexit()` called `this.stop()` which throws `UnsupportedOperationException` on Java 9+. This made the Quit button and normal inference completion crash.
+- **Fix:** Replaced with a `volatile boolean exitRequested` flag. Added flag checks in `run()`, `verify()`, and `askval()` loops so the thread exits gracefully.
+
+### 10. URLData.activate() NPE when stream is null
+- **File:** `src/URLData.java:97-99`
+- **Severity:** High — crashes on startup if any .exp file can't be opened
+- **Problem:** `theStream.close()` was called without null check. If `openURL()` failed (stream is null), `activate()` threw NullPointerException.
+- **Fix:** Added `if (theStream != null)` guard before close.
+
+### 11. file:/ URL path doubled slashes (file:////path)
+- **File:** `src/ExpertSystem.java:246`, `src/URLData.java:106-107`
+- **Severity:** High — .exp knowledge base files failed to load
+- **Problem:** `initializeApp()` created `file:///` + `/Users/...` = `file:////Users/...` (too many slashes). And `URLData.baseContext()` unconditionally prepended `file:///` after stripping `file:/`, doubling slashes on URLs that already had `file:///`.
+- **Fix:** `initializeApp()` now checks if path starts with `/` and uses `file://` (two slashes) so the result is `file:///path`. `baseContext()` now only normalizes when the URL doesn't already start with `file:///`.
+
+### 12. build.xml: ant compiled with Java 24, incompatible with Java 17 runtime
+- **File:** `build.xml`
+- **Severity:** High — JAR wouldn't run: UnsupportedClassVersionError
+- **Problem:** Ant used its own Java 24 to compile, but the runtime `java` was Java 17. Class file version 68.0 (Java 24) can't run on Java 17.
+- **Fix:** Added `source="17" target="17"` to the `<javac>` task. Also added `dir="${dist}"` to the `<java>` run task so .exp files are found.
+
 ## Remaining Warnings (not fixed)
 The 20 compiler warnings are all deprecated API usage standard for 1995-2005 era Java:
 - `java.applet.Applet` (removed in modern Java)
 - `new Integer()`, `new Float()`, `new Long()`, `new Double()` constructors
 - `Component.show()`, `hide()`, `enable()`, `disable()`, `resize()`, `size()`
-- `handleEvent(Event)` (old AWT event model)
 - `DataInputStream.readLine()`
 - `Class.newInstance()`
 - Raw type `Hashtable` and `Vector` without generics
@@ -61,7 +90,6 @@ These all compile and function correctly but would require a larger rewrite to m
 
 ## Build
 ```
-javac src/*.java -d bin    # compiles with 20 deprecation warnings, 0 errors
 ant jar                    # builds dist/ExpertSystem.jar
-ant run                    # runs standalone
+ant run                    # runs standalone from dist/
 ```

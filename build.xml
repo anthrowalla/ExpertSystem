@@ -36,7 +36,8 @@
         <mkdir dir="${bin}"/>
         <mkdir dir="${lib}"/>
         <javac srcdir="${src}" destdir="${bin}" includeAntRuntime="no"
-               classpathref="lib.path" debug="${compile.debug}" >
+               classpathref="lib.path" debug="${compile.debug}"
+               source="17" target="17" >
         </javac>
     </target>
 
@@ -53,7 +54,7 @@
     </target>
 
     <target name="run" depends="jar" description="Run jar file">
-        <java jar="${jarfile}" fork="yes" failonerror="true"/>
+        <java jar="${jarfile}" fork="yes" failonerror="true" dir="${dist}"/>
     </target>
 
     <target name="clean" description="Remove build and dist directories">
