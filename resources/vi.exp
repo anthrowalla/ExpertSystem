@@ -1,0 +1,60 @@
+VI Quit
+
+if you have entered text
+and you want to quit
+and you want to save changes
+and you type ZZ
+and it appears on screen
+then type  '<ESCAPE> ZZ'
+and you forgot to type <ESCAPE> before ZZ
+conclude solved
+
+if you have entered text
+and you want to quit
+and you want to save changes
+and you type ZZ
+and not it appears on screen
+and you are sure you're running vi?
+then beats me!
+conclude unsolved
+
+if you have entered text
+and you want to quit
+and you want to save changes
+and not you type ZZ
+then type  '<ESCAPE> ZZ'
+conclude solved
+
+if you have entered text
+and you want to quit
+and not you want to save changes
+then type   '<ESCAPE> :w! <RETURN>'
+conclude solved
+
+if not you intended to type some text
+and you have typed command
+and it appears on screen
+then type  <ESCAPE> and the command
+and you forgot to type <ESCAPE> before typing command
+conclude solved
+
+if you intended to type some text
+and not it appears on screen
+then type command 'a,i,o,O' and then text
+and you forgot to type a command  before typing text
+conclude solved
+
+if you want to quit
+and message is "no current filename"
+and you have entered text
+and you want to save changes
+then type   ':wq filename <RETURN>'
+and you typed vi    instead of vi filename
+conclude solved
+
+if you intended to type some text
+and it appears on screen
+then what's the problem?
+conclude typing text means typing keys that are for data not commands
+
+

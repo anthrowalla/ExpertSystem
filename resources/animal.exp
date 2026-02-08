@@ -1,0 +1,99 @@
+Animal Expert
+
+if animal is mammal
+then animal has warm blood
+
+if animal has feathers
+andif animal lays eggs
+then animal is bird
+
+ifnot animal is bird
+then animal is mammal
+
+if animal is mammal
+and animal eats meat
+then animal is carnivore
+
+if animal is carnivore
+and animal has pointed teeth
+and animal has retractable claws
+and animal has forward pointing eyes
+then animal is cat
+
+if animal is mammal
+andnot animal is carnivore
+and animal has hoofs
+then animal is ungulate
+
+if animal is cat
+and animal has tawny color
+and animal has dark spots
+thenhyp animal is cheeta
+
+if animal is cat
+and animal has tawny color
+and animal has black stripes
+thenhyp animal is tiger
+
+if animal is cat
+and animal is small
+and animal is domesticated
+and animal mostly catches mice
+and animal loves warm laps
+thenhyp animal is a house cat
+
+if animal is ungulate
+and animal has long neck
+and animal has long legs
+and animal has dark spots
+thenhyp animal is giraffe
+
+if animal is bird
+andnot animal flies
+andnot animal swims
+and animal has long neck
+and animal is black and white
+thenhyp animal is ostrich
+
+if animal is ungulate
+and animal has black stripes
+thenhyp animal is zebra
+
+if animal is ungulate
+and animal has horns
+thenhyp animal is cow
+
+if animal is bird
+andnot animal flies
+and animal swims
+and animal is black and white
+thenhyp animal is penguin
+
+if animal is bird
+and animal flies
+and animal flies well
+and animal has webbed feet
+andnot animal has flat bill
+thenhyp animal is albatros
+
+if animal is bird
+and animal flies
+and animal flies well
+and animal has webbed feet
+and animal has flat bill
+thenhyp animal is duck
+
+
+
+ifnot animal is cheeta
+ifnot animal is tiger
+ifnot animal is a house cat
+ifnot animal is giraffe
+ifnot animal is ostrich
+ifnot animal is zebra
+ifnot animal is penguin
+ifnot animal is albatros
+ifnot animal is duck
+ifnot animal is cow
+thenhyp this animal is not within my knowledge
+

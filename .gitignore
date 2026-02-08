@@ -1,0 +1,24 @@
+# Compiled class files
+bin/
+build/
+
+# Distribution
+dist/
+
+# IDE / Xcode project files
+*.pbproj/
+*.xcodeproj/
+
+# Backup files
+*.b0
+*.b1
+*.b2
+*.bak
+*.orig
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Ignore directory (old/alternative versions)
+Ignore/
