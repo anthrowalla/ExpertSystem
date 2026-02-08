@@ -228,26 +228,10 @@ public class ExpertSystem extends Applet {
 
 	private static void initializeApp()
 	{
-        StringBuffer p = new StringBuffer(System.getProperty("user.dir"));
-        int         pl = p.length();
-
-        // If the system file separator isn't the URL file separator convert it.
-        try
-        {
-            char ps = (System.getProperty("file.separator")).charAt(0);
-            if(ps != '/')
-                for(int counter = 0; counter < pl; counter++)
-                {
-                    if(ps == p.charAt(counter)) p.setCharAt(counter, '/');
-                }
-        } catch(StringIndexOutOfBoundsException e) {}
-
         try {
-            String path = p.toString();
-            if (path.startsWith("/"))
-                documentBase = new URL("file://" + path + "/");
-            else
-                documentBase = new URL("file:///" + path + "/");
+            java.io.File dir = new java.io.File(System.getProperty("user.dir"));
+            // File.toURI().toURL() always produces a correct file: URL
+            documentBase = dir.toURI().toURL();
         } catch (java.net.MalformedURLException e) {
         }
 	}

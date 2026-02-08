@@ -65,11 +65,11 @@ Java rule-based expert system (circa 1995-2005). 11 source files in `src/`, no p
 - **Problem:** `theStream.close()` was called without null check. If `openURL()` failed (stream is null), `activate()` threw NullPointerException.
 - **Fix:** Added `if (theStream != null)` guard before close.
 
-### 11. file:/ URL path doubled slashes (file:////path)
-- **File:** `src/ExpertSystem.java:246`, `src/URLData.java:106-107`
+### 11. file:/ URL path mangled by manual string manipulation (file://////path)
+- **File:** `src/ExpertSystem.java`, `src/URLData.java`
 - **Severity:** High — .exp knowledge base files failed to load
-- **Problem:** `initializeApp()` created `file:///` + `/Users/...` = `file:////Users/...` (too many slashes). And `URLData.baseContext()` unconditionally prepended `file:///` after stripping `file:/`, doubling slashes on URLs that already had `file:///`.
-- **Fix:** `initializeApp()` now checks if path starts with `/` and uses `file://` (two slashes) so the result is `file:///path`. `baseContext()` now only normalizes when the URL doesn't already start with `file:///`.
+- **Problem:** `initializeApp()` hand-built `file:///` URLs, and `URLData.baseContext()` tried to normalize them by string manipulation. Java's `URL.toString()` normalizes `file:///path` to `file:/path`, so `baseContext()` would re-prepend `file:///` creating `file://////path`. The two methods fought each other producing wrong URLs.
+- **Fix:** Replaced `initializeApp()` with `File.toURI().toURL()` which always produces the correct URL. Replaced `URLData`'s hand-built string concatenation with `new URL(context, url)` — the standard Java API for resolving relative URLs. Removed `baseContext()` entirely.
 
 ### 12. build.xml: ant compiled with Java 24, incompatible with Java 17 runtime
 - **File:** `build.xml`

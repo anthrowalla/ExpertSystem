@@ -15,14 +15,10 @@ public class URLData // extends Thread
 	
 	URLData(URL context, String url) {
 		try {
-			// RelativeURL a = 
-			String relativeURL = baseContext(context)+url;
-			System.out.println(relativeURL);
-			// theURL =  new URL(context,url);
-			theURL =  new URL(relativeURL);
+			theURL = new URL(context, url);
 		} catch (java.net.MalformedURLException e) {
 			theURL = null;
-                        System.out.println("Malformed URL "+url);
+			System.out.println("Malformed URL "+url);
 		}
 	}
 	
@@ -102,17 +98,4 @@ public class URLData // extends Thread
 		done = true;
 	}
 	
-	String baseContext(URL context) {
-		String p = context.toString();
-		// Normalize file:/ URLs to file:/// form
-		if (p.startsWith("file:///")) {
-			// already correct, do nothing
-		} else if (p.startsWith("file:/")) {
-			p = "file:///" + p.substring(6);
-		}
-		int k = p.lastIndexOf('/'); // change to system separater!
-
-		return(p.substring(0,k+1));
-
-	}
 }
