@@ -14,50 +14,69 @@ public class ExpertSystem extends Applet {
 	public void init() {
 
 	   setLayout(new BorderLayout(5,5));
-		setSize(521,701);
+		setSize(500,701);
+		setBackground(new Color(16777215));
 
-		panel1 = new java.awt.Panel();
-		panel1.setLayout(null);
-		panel1.setBounds(0,0,521,701);
-		panel1.setBackground(new Color(16777215));
-		add(panel1);
+		// Top: title label
 		label1 = new java.awt.Label("MicroExpert",Label.CENTER);
-		label1.setBounds(134,-4,269,48);
 		label1.setFont(new Font("Helvetica", Font.PLAIN, 36));
-		panel1.add(label1);
-		consultButton = new java.awt.Button();
-		consultButton.setLabel("Consult");
-		consultButton.setBounds(11,641,63,21);
-		consultButton.setBackground(new Color(-4533222));
-		panel1.add(consultButton);
+		add(label1, BorderLayout.NORTH);
+
+		// Center panel holds askMe + text area cards, stacked vertically
+		Panel centerPanel = new Panel();
+		centerPanel.setLayout(new BorderLayout(5,5));
+
+		// AskMe panel at top of center (visible during consultation)
 		askMe1 = new AskMe();
 		GridBagLayout gridBagLayout;
 		gridBagLayout = new GridBagLayout();
 		askMe1.setLayout(gridBagLayout);
 		askMe1.setVisible(false);
-		askMe1.setBounds(35,52,449,106);
 		askMe1.setBackground(new Color(-6697729));
-		panel1.add(askMe1);
+		centerPanel.add(askMe1, BorderLayout.NORTH);
+
+		// Card panel: sourceText and queryText share the same space
+		textCards = new CardLayout();
+		textCardPanel = new Panel(textCards) {
+			public Dimension getMinimumSize() {
+				return new Dimension(500, 300);
+			}
+			public Dimension getPreferredSize() {
+				int w = Math.max(500, getParent() != null ? getParent().getWidth() : 500);
+				return new Dimension(w, 500);
+			}
+		};
+
+		sourceText = new java.awt.TextArea();
+		textCardPanel.add(sourceText, "source");
+
 		queryText = new java.awt.TextArea(14,0);
 		queryText.setText("Consultation");
-		queryText.setVisible(false);
-		queryText.setBounds(29,167,455,465);
 		queryText.setFont(new Font("Times", Font.PLAIN, 14));
-		panel1.add(queryText);
-		URLField = new java.awt.TextField();
-		URLField.setBounds(314,645,184,23);
-		panel1.add(URLField);
+		textCardPanel.add(queryText, "query");
+
+		textCards.show(textCardPanel, "source");
+		centerPanel.add(textCardPanel, BorderLayout.CENTER);
+
+		add(centerPanel, BorderLayout.CENTER);
+
+		// Bottom toolbar: Consult button, URL list, URL field
+		Panel bottomPanel = new Panel();
+		bottomPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 3));
+		consultButton = new java.awt.Button();
+		consultButton.setLabel("Consult");
+		consultButton.setBackground(new Color(-4533222));
+		bottomPanel.add(consultButton);
 		URLList = new java.awt.Choice();
 		URLList.addItem("Animal");
 		URLList.addItem("Izzat");
 		URLList.addItem("Navigate");
 		URLList.addItem("vi");
 		URLList.addItem("Your Choice");
-		panel1.add(URLList);
-		URLList.setBounds(104,640,100,40);
-		sourceText = new java.awt.TextArea();
-		sourceText.setBounds(19,46,488,588);
-		panel1.add(sourceText);
+		bottomPanel.add(URLList);
+		URLField = new java.awt.TextField(20);
+		bottomPanel.add(URLField);
+		add(bottomPanel, BorderLayout.SOUTH);
 		//}}
 		
 		theContext = getDocumentBase();
@@ -159,8 +178,8 @@ public class ExpertSystem extends Applet {
         }
 
 	//{{DECLARE_CONTROLS
-	java.awt.Panel borderPanel1;
-	java.awt.Panel panel1;
+	CardLayout textCards;
+	Panel textCardPanel;
 	java.awt.Label label1;
 	java.awt.Button consultButton;
 	AskMe askMe1;
@@ -184,22 +203,21 @@ public class ExpertSystem extends Applet {
 	boolean x=true;
 
 	void consultButton_Clicked(java.awt.event.ActionEvent event) {
-		
+
 		if (x) {
 			consultButton.setLabel("Edit");
 			compileIt();
-			sourceText.hide();
-			queryText.show();
-			askMe1.show();
+			textCards.show(textCardPanel, "query");
+			askMe1.setVisible(true);
 			x=false;
-	
+
 		} else {
-			queryText.hide();
-			askMe1.hide();
-			sourceText.show();
+			textCards.show(textCardPanel, "source");
+			askMe1.setVisible(false);
 			consultButton.setLabel("Consult");
 			x=true;
 		}
+		validate();
 	}
 
 

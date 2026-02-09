@@ -36,42 +36,39 @@ public class AppletFrame extends Frame {
 		// resize frame window to fit applet
 		// assumes that the applet sets its own size
 		// otherwise, you should set a specific size here.
-		appletSize =  a.size();
 		f.pack();
-		f.resize(appletSize);
+		f.setMinimumSize(new Dimension(500, 400));
+		f.setSize(500, 701);
 
 		// show the window
-		f.show();
+		f.setVisible(true);
 		ourFrame = f;
-	
+
 	}  // end startApplet()
 
 	public static void startApplet(Applet className, String title, String args[]) {
 		Applet a;
-		Dimension appletSize;
 
 		AppletFrame f = new AppletFrame(title);
-		
+
 		a = className;
-		
+
 		// initialize the applet
 		a.init();
 		a.start();
-	
+
 		// create new application frame window
-	
+
 		// add applet to frame window
 		f.add("Center", a);
-	
+
 		// resize frame window to fit applet
-		// assumes that the applet sets its own size
-		// otherwise, you should set a specific size here.
-		appletSize =  a.size();
 		f.pack();
-		f.resize(appletSize);
+		f.setMinimumSize(new Dimension(500, 400));
+		f.setSize(500, 701);
 
 		// show the window
-		f.show();
+		f.setVisible(true);
 	
 	}  // end startApplet()
 
@@ -79,14 +76,14 @@ public class AppletFrame extends Frame {
 	public AppletFrame(String name) {
 		// call java.awt.Frame(String) constructor
 		super(name);
-			//{{INIT_CONTROLS
 		setLayout(new BorderLayout());
-		setSize(430,270);
 		ourFrame = this;
-	//	setTitle("Untitled");
-		//}}
-		//{{INIT_MENUS
-		//}}
+		addWindowListener(new java.awt.event.WindowAdapter() {
+			public void windowClosing(java.awt.event.WindowEvent e) {
+				dispose();
+				System.exit(0);
+			}
+		});
 }
 	public static void goFront() {
 		ourFrame.toFront();
