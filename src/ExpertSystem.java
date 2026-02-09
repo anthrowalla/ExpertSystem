@@ -48,15 +48,26 @@ public class ExpertSystem extends Applet {
 		};
 
 		sourceText = new java.awt.TextArea();
+		sourceText.setFont(new Font("Monospaced", Font.PLAIN, 24));
 		textCardPanel.add(sourceText, "source");
 
 		queryText = new java.awt.TextArea(14,0);
 		queryText.setText("Consultation");
-		queryText.setFont(new Font("Times", Font.PLAIN, 14));
+		queryText.setFont(new Font("Times", Font.PLAIN, 28));
 		textCardPanel.add(queryText, "query");
 
 		textCards.show(textCardPanel, "source");
-		centerPanel.add(textCardPanel, BorderLayout.CENTER);
+
+		// 20px left/right margins around text areas
+		Panel textMarginPanel = new Panel(new BorderLayout());
+		Panel leftMargin = new Panel();
+		leftMargin.setPreferredSize(new Dimension(20, 0));
+		Panel rightMargin = new Panel();
+		rightMargin.setPreferredSize(new Dimension(20, 0));
+		textMarginPanel.add(leftMargin, BorderLayout.WEST);
+		textMarginPanel.add(textCardPanel, BorderLayout.CENTER);
+		textMarginPanel.add(rightMargin, BorderLayout.EAST);
+		centerPanel.add(textMarginPanel, BorderLayout.CENTER);
 
 		add(centerPanel, BorderLayout.CENTER);
 

@@ -39,6 +39,7 @@ public class AppletFrame extends Frame {
 		f.pack();
 		f.setMinimumSize(new Dimension(500, 400));
 		f.setSize(500, 701);
+		f.setLocation(50, 50);
 
 		// show the window
 		f.setVisible(true);
@@ -66,6 +67,7 @@ public class AppletFrame extends Frame {
 		f.pack();
 		f.setMinimumSize(new Dimension(500, 400));
 		f.setSize(500, 701);
+		f.setLocation(50, 50);
 
 		// show the window
 		f.setVisible(true);
