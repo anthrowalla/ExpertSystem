@@ -14,7 +14,7 @@ public class ExpertSystem extends Applet {
 	public void init() {
 
 	   setLayout(new BorderLayout(5,5));
-		setSize(500,701);
+		setSize(700,701);
 		setBackground(new Color(16777215));
 
 		// Top: title label
@@ -39,10 +39,10 @@ public class ExpertSystem extends Applet {
 		textCards = new CardLayout();
 		textCardPanel = new Panel(textCards) {
 			public Dimension getMinimumSize() {
-				return new Dimension(500, 300);
+				return new Dimension(700, 300);
 			}
 			public Dimension getPreferredSize() {
-				int w = Math.max(500, getParent() != null ? getParent().getWidth() : 500);
+				int w = Math.max(700, getParent() != null ? getParent().getWidth() : 700);
 				return new Dimension(w, 500);
 			}
 		};

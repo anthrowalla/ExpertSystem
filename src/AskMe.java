@@ -7,7 +7,7 @@ class PLabel extends Label {
 	public Insets prefInset;
 	
 	public Dimension preferredSize() {
-		if (prefSize == null) prefSize = new Dimension(150,15);
+		if (prefSize == null) prefSize = new Dimension(225,23);
 		return prefSize;
 	}
 	public Insets Insets() {
@@ -49,18 +49,22 @@ public class AskMe extends Panel
 		gLayout = new GridBagLayout();
 		setLayout(gLayout);
 
+		Font panelFont = new Font("Helvetica", Font.PLAIN, 18);
+		Font buttonFont = new Font("Helvetica", Font.BOLD, 18);
+
 		titleLabel = new PLabel();
 		titleLabel.setText("Consultation: Select from Menu");
 		titleLabel.setAlignment(titleLabel.CENTER);
-		titleLabel.setPrefSize(350,20);
+		titleLabel.setFont(panelFont);
+		titleLabel.setPrefSize(525,30);
 		this.add(titleLabel);
-		
+
 		GridBagConstraints gcon = new GridBagConstraints();
 		gcon.gridheight = 1;
 		gcon.gridwidth = 4;
 		gcon.gridx = 0;
 		gcon.gridy = 0;
-		gcon.ipady = 5;
+		gcon.ipady = 8;
 		gcon.weightx = .5;
 		gcon.weighty = .5;
 		gcon.fill = gcon.HORIZONTAL;
@@ -69,18 +73,18 @@ public class AskMe extends Panel
 
 		label3D1 = new PLabel();
 		label3D1.setText("                    Ask and Receive                      ");
-	//	label3D1.reshape(16,6,393,50);
 		label3D1.setBackground(new Color(16777075));
-		label3D1.setPrefSize(300,40);
-		label3D1.setInsets(5,15,5,15);
+		label3D1.setFont(panelFont);
+		label3D1.setPrefSize(450,60);
+		label3D1.setInsets(8,20,8,20);
 		this.add(label3D1);
-		
+
 		gcon = new GridBagConstraints();
 		gcon.gridheight = 2;
 		gcon.gridwidth = 2;
 		gcon.gridx = 1;
 		gcon.gridy = gcon.RELATIVE;
-		gcon.ipady = 5;
+		gcon.ipady = 8;
 		gcon.fill = gcon.HORIZONTAL;
 		gcon.fill = gcon.BOTH;
 		gcon.weightx = .5;
@@ -88,15 +92,16 @@ public class AskMe extends Panel
 		gLayout.setConstraints(label3D1,gcon);
 
 		optionList = new java.awt.Choice();
+		optionList.setFont(panelFont);
 		optionList.setVisible(true);
 		this.add(optionList);
-		
+
 		gcon = new GridBagConstraints();
 		gcon.gridheight = 1;
 		gcon.gridwidth = 2;
 		gcon.gridx = 1;
 		gcon.gridy = gcon.RELATIVE;
-		gcon.ipady = 5;
+		gcon.ipady = 8;
 		gcon.weightx = .5;
 		gcon.weighty = .5;
 		gcon.fill = gcon.HORIZONTAL;
@@ -104,7 +109,7 @@ public class AskMe extends Panel
 
 
 		yesButton = new java.awt.Button("True ");
-	//	yesButton.reshape(54,100,60,23);
+		yesButton.setFont(buttonFont);
 		yesButton.setBackground(new Color(11468718));
 		this.add(yesButton);
 		gcon = new GridBagConstraints();
@@ -112,14 +117,14 @@ public class AskMe extends Panel
 		gcon.gridwidth = 1;
 		gcon.gridx = 0;
 		gcon.gridy = 4;
-		gcon.ipady = 5;
-		gcon.ipadx = 5;
+		gcon.ipady = 8;
+		gcon.ipadx = 8;
 		gcon.weightx = .5;
 		gcon.weighty = .5;
 		gLayout.setConstraints(yesButton,gcon);
 
 		noButton = new java.awt.Button("False");
-	//	noButton.reshape(150,100,60,23);
+		noButton.setFont(buttonFont);
 		noButton.setBackground(new Color(11206570));
 		this.add(noButton);
 		gcon = new GridBagConstraints();
@@ -127,13 +132,13 @@ public class AskMe extends Panel
 		gcon.gridwidth = 1;
 		gcon.gridx = gcon.RELATIVE;
 		gcon.gridy = 4;
-		gcon.ipady = 5;
+		gcon.ipady = 8;
 		gcon.weightx = .5;
 		gcon.weighty = .5;
 		gLayout.setConstraints(noButton,gcon);
 
 		whyButton = new java.awt.Button("Why");
-	//	whyButton.reshape(250,100,60,23);
+		whyButton.setFont(buttonFont);
 		whyButton.setBackground(new Color(11206570));
 		this.add(whyButton);
 		gcon = new GridBagConstraints();
@@ -141,14 +146,14 @@ public class AskMe extends Panel
 		gcon.gridwidth = 1;
 		gcon.gridx = gcon.RELATIVE;
 		gcon.gridy = 4;
-		gcon.ipady = 5;
-		gcon.ipadx = 5;
+		gcon.ipady = 8;
+		gcon.ipadx = 8;
 		gcon.weightx = .5;
 		gcon.weighty = .5;
 		gLayout.setConstraints(whyButton,gcon);
-	
+
 		quitButton = new java.awt.Button("Stop");
-	//	quitButton.reshape(320,100,60,23);
+		quitButton.setFont(buttonFont);
 		quitButton.setBackground(new Color(11206570));
 		this.add(quitButton);
 		gcon = new GridBagConstraints();
@@ -156,8 +161,8 @@ public class AskMe extends Panel
 		gcon.gridwidth = 1;
 		gcon.gridx = gcon.RELATIVE;
 		gcon.gridy = 4;
-		gcon.ipady = 5;
-		gcon.ipadx = 5;
+		gcon.ipady = 8;
+		gcon.ipadx = 8;
 		gcon.weightx = .5;
 		gcon.weighty = .5;
 		gLayout.setConstraints(quitButton,gcon);
@@ -283,7 +288,7 @@ public class AskMe extends Panel
 	}
 	
 	public Dimension preferredSize() {
-		return new Dimension(350,60);
+		return new Dimension(525,90);
 	}
 	
 	class SymAction implements java.awt.event.ActionListener

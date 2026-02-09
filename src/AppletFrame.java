@@ -37,8 +37,8 @@ public class AppletFrame extends Frame {
 		// assumes that the applet sets its own size
 		// otherwise, you should set a specific size here.
 		f.pack();
-		f.setMinimumSize(new Dimension(500, 400));
-		f.setSize(500, 701);
+		f.setMinimumSize(new Dimension(700, 400));
+		f.setSize(700, 701);
 		f.setLocation(50, 50);
 
 		// show the window
@@ -65,8 +65,8 @@ public class AppletFrame extends Frame {
 
 		// resize frame window to fit applet
 		f.pack();
-		f.setMinimumSize(new Dimension(500, 400));
-		f.setSize(500, 701);
+		f.setMinimumSize(new Dimension(700, 400));
+		f.setSize(700, 701);
 		f.setLocation(50, 50);
 
 		// show the window
