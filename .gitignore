@@ -23,3 +23,6 @@ Thumbs.db
 # Ignore directory (old/alternative versions)
 Ignore/
 toss/
+
+# old vi buffers
+*.swp

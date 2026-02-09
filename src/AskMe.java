@@ -68,6 +68,7 @@ public class AskMe extends Panel
 		gcon.weightx = .5;
 		gcon.weighty = .5;
 		gcon.fill = gcon.HORIZONTAL;
+		gcon.insets = new java.awt.Insets(10, 0, 10, 0);
 		gLayout.setConstraints(titleLabel,gcon);
 
 
@@ -89,6 +90,7 @@ public class AskMe extends Panel
 		gcon.fill = gcon.BOTH;
 		gcon.weightx = .5;
 		gcon.weighty = .5;
+		gcon.insets = new java.awt.Insets(10, 0, 10, 0);
 		gLayout.setConstraints(label3D1,gcon);
 
 		optionList = new java.awt.Choice();
@@ -105,6 +107,7 @@ public class AskMe extends Panel
 		gcon.weightx = .5;
 		gcon.weighty = .5;
 		gcon.fill = gcon.HORIZONTAL;
+		gcon.insets = new java.awt.Insets(10, 0, 10, 0);
 		gLayout.setConstraints(optionList,gcon);
 
 
@@ -121,6 +124,7 @@ public class AskMe extends Panel
 		gcon.ipadx = 8;
 		gcon.weightx = .5;
 		gcon.weighty = .5;
+		gcon.insets = new java.awt.Insets(10, 0, 10, 0);
 		gLayout.setConstraints(yesButton,gcon);
 
 		noButton = new java.awt.Button("False");
@@ -135,6 +139,7 @@ public class AskMe extends Panel
 		gcon.ipady = 8;
 		gcon.weightx = .5;
 		gcon.weighty = .5;
+		gcon.insets = new java.awt.Insets(10, 0, 10, 0);
 		gLayout.setConstraints(noButton,gcon);
 
 		whyButton = new java.awt.Button("Why");
@@ -150,6 +155,7 @@ public class AskMe extends Panel
 		gcon.ipadx = 8;
 		gcon.weightx = .5;
 		gcon.weighty = .5;
+		gcon.insets = new java.awt.Insets(10, 0, 10, 0);
 		gLayout.setConstraints(whyButton,gcon);
 
 		quitButton = new java.awt.Button("Stop");
@@ -165,6 +171,7 @@ public class AskMe extends Panel
 		gcon.ipadx = 8;
 		gcon.weightx = .5;
 		gcon.weighty = .5;
+		gcon.insets = new java.awt.Insets(10, 0, 10, 0);
 		gLayout.setConstraints(quitButton,gcon);
 	
 		yesButton.setEnabled(false);
@@ -288,7 +295,11 @@ public class AskMe extends Panel
 	}
 	
 	public Dimension preferredSize() {
-		return new Dimension(525,90);
+		// Let GridBagLayout calculate the height naturally from its contents.
+		// Use the layout's preferred size but enforce a minimum width of 525.
+		Dimension d = gLayout != null ? gLayout.preferredLayoutSize(this) : new Dimension(525, 300);
+		if (d.width < 525) d.width = 525;
+		return d;
 	}
 	
 	class SymAction implements java.awt.event.ActionListener

@@ -77,6 +77,40 @@ Java rule-based expert system (circa 1995-2005). 11 source files in `src/`, no p
 - **Problem:** Ant used its own Java 24 to compile, but the runtime `java` was Java 17. Class file version 68.0 (Java 24) can't run on Java 17.
 - **Fix:** Added `source="17" target="17"` to the `<javac>` task. Also added `dir="${dist}"` to the `<java>` run task so .exp files are found.
 
+## UI Modernization
+
+### 13. Replaced null layout with responsive BorderLayout + CardLayout
+- **Files:** `src/ExpertSystem.java`, `src/AppletFrame.java`
+- **Problem:** Original null layout produced a fixed-size, non-resizable UI.
+- **Changes:**
+  - Main applet uses `BorderLayout`: title label (NORTH), center panel (CENTER), bottom toolbar (SOUTH).
+  - Center panel uses `BorderLayout`: AskMe panel (NORTH), text area card panel (CENTER).
+  - `sourceText` and `queryText` share a `CardLayout` panel, swapped on Consult/Edit toggle.
+  - Text card panel has minimum size 700×300 and preferred width matching parent.
+  - 20px left/right margin panels around text areas.
+  - `AppletFrame` sets minimum size 700×400, default size 700×701, offset 50px from left/top.
+  - Window close handled via `WindowListener` (replaces AWT 1.0 `WINDOW_DESTROY`).
+
+### 14. Enlarged fonts and controls for readability
+- **Files:** `src/ExpertSystem.java`, `src/AskMe.java`
+- **Changes:**
+  - `sourceText`: Monospaced 24pt (was 12pt).
+  - `queryText`: Times 28pt (was 14pt).
+  - Main title ("MicroExpert"): Helvetica 36pt (was 18pt).
+  - AskMe panel text: Helvetica 18pt (was 12pt).
+  - AskMe buttons: Helvetica Bold 18pt (was 12pt).
+  - Increased internal padding (`ipady`/`ipadx`) and label preferred sizes.
+
+### 15. Added 10px vertical spacing between AskMe panel components
+- **File:** `src/AskMe.java`
+- **Changes:** Added `gcon.insets = new Insets(10, 0, 10, 0)` to all seven `GridBagConstraints` blocks (titleLabel, label3D1, optionList, yesButton, noButton, whyButton, quitButton) for consistent 10px gaps above and below each component.
+
+### 16. AskMe panel height too small — components half-obscured
+- **File:** `src/AskMe.java`
+- **Severity:** High — buttons and labels clipped/overlapping
+- **Problem:** `preferredSize()` returned a hardcoded `Dimension(525, 90)`. After enlarging fonts to 18pt, adding `ipady=8` internal padding, and 10px top/bottom insets, the actual content needed far more than 90px. Since the AskMe panel sits in `BorderLayout.NORTH` (which uses preferred height), everything was squished into 90 pixels.
+- **Fix:** Changed `preferredSize()` to delegate to `GridBagLayout.preferredLayoutSize(this)` so the height is calculated naturally from the actual contents. A minimum width of 525px is still enforced.
+
 ## Remaining Warnings (not fixed)
 The 20 compiler warnings are all deprecated API usage standard for 1995-2005 era Java:
 - `java.applet.Applet` (removed in modern Java)
