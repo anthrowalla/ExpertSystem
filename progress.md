@@ -122,8 +122,45 @@ The 20 compiler warnings are all deprecated API usage standard for 1995-2005 era
 
 These all compile and function correctly but would require a larger rewrite to modernize.
 
+## JavaScript Port (expertjs/)
+
+### 17. Fixed negation logic for antecedents and consequents
+- **File:** `expertjs/expert.js`
+- **Severity:** High — breaks logical inference with negation keywords
+- **Problem:** The original implementation incorrectly applied negation by flipping the truth value after proving an antecedent. This didn't properly handle the four cases of negation in rule-based systems.
+- **Fix:** Implemented proper four-case logic:
+  - **CASE 1**: Antecedent condition is true if proposition is true AND keyword does NOT contain "NOT"
+  - **CASE 2**: Antecedent condition is true if proposition is false AND keyword contains "NOT"
+  - **CASE 3**: Consequent proposition is assigned true if all antecedent conditions are true AND keyword does NOT contain "NOT"
+  - **CASE 4**: Consequent proposition is assigned false if all antecedent conditions are true AND keyword contains "NOT"
+
+The fix uses `ruleType.includes('NOT')` to detect negation in keywords like `IFNOT`, `ANDNOT`, `THENNOT`, `ASSERTNOT`, `ASKNOT`, `WHENNOT`, `CONCLUDENOT`, etc.
+
+### 18. Fixed rule parsing to preserve all antecedents
+- **File:** `expertjs/expert.js`
+- **Severity:** High — rules only captured first antecedent, losing multi-line conditions
+- **Problem:** When parsing consequent keywords (`THEN`, `THENHYP`, etc.), the code created a new `Rule` object, discarding all previously accumulated antecedents from `AND`, `ANDNOT`, `ANDIF` continuation lines. This caused rules like the ostrich rule (5 antecedents) to only retain the first one, making inference incorrect.
+- **Fix:** Changed consequent parsing to add to existing rule instead of creating new one. Added error handling for malformed knowledge bases where consequents appear without antecedents.
+
+### 19. Changed AND keyword type from ANY to ANT
+- **File:** `expertjs/expert.js`
+- **Severity:** High — `AND` continuation lines were ignored
+- **Problem:** `AND` keyword was defined with type `ANY` instead of `ANT`. The parser uses `ruleType.startsWith('ANT')` to identify antecedents, so `AND` lines were being skipped entirely.
+- **Fix:** Changed `AND: 'ANY'` to `AND: 'ANT'` in RULE_TYPES constant. Also fixed misleading trace message that said "No rules conclude" when rules were actually found.
+
+### 20. Fixed case-sensitivity in keyword matching
+- **File:** `expertjs/expert.js`
+- **Severity:** Medium — keywords failed to match depending on capitalization
+- **Problem:** Knowledge base files use lowercase `if`, `and`, `then` but the code compared case-sensitively with uppercase RULE_TYPES keys.
+- **Fix:** Changed `line.startsWith(kw)` to `line.toLowerCase().startsWith(kw.toLowerCase())` in the keyword detection loop.
+
 ## Build
 ```
 ant jar                    # builds dist/ExpertSystem.jar
 ant run                    # runs standalone from dist/
+```
+
+## JavaScript Port
+```
+open expertjs/index.html     # runs in browser with no server needed
 ```

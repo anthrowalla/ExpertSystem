@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MicroExpert JavaScript - Rule-Based Expert System</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .header {
+      background: white;
+      border-radius: 10px;
+      padding: 25px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .header h1 {
+      margin: 0 0 10px 0;
+      color: #333;
+      font-size: 28px;
+    }
+
+    .header p {
+      margin: 0;
+      color: #666;
+      font-size: 14px;
+    }
+
+    .main-panel {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 800px) {
+      .main-panel {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .panel {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .panel h2 {
+      margin-top: 0;
+      color: #333;
+      font-size: 18px;
+      border-bottom: 2px solid #667eea;
+      padding-bottom: 10px;
+    }
+
+    .kb-selector {
+      margin-bottom: 20px;
+    }
+
+    .kb-selector label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .kb-selector select {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 6px;
+      font-size: 14px;
+      background: white;
+      cursor: pointer;
+      transition: border-color 0.3s;
+    }
+
+    .kb-selector select:hover {
+      border-color: #667eea;
+    }
+
+    .kb-selector select:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .question-area {
+      min-height: 200px;
+    }
+
+    .question-text {
+      background: #f8f9fa;
+      border-left: 4px solid #667eea;
+      padding: 15px;
+      margin: 15px 0;
+      border-radius: 4px;
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    .explanation {
+      background: #fff3cd;
+      border-left: 4px solid #ffc107;
+      padding: 12px;
+      margin: 15px 0;
+      border-radius: 4px;
+      font-size: 13px;
+      color: #856404;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 15px;
+    }
+
+    button {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-yes {
+      background: #28a745;
+      color: white;
+    }
+
+    .btn-no {
+      background: #dc3545;
+      color: white;
+    }
+
+    .btn-why {
+      background: #17a2b8;
+      color: white;
+    }
+
+    .btn-start {
+      background: #667eea;
+      color: white;
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    .btn-reset {
+      background: #6c757d;
+      color: white;
+    }
+
+    .output-area {
+      background: #f8f9fa;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      padding: 15px;
+      min-height: 300px;
+      max-height: 500px;
+      overflow-y: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .output-line {
+      margin: 5px 0;
+      padding: 5px;
+      border-radius: 3px;
+    }
+
+    .output-line.conclusion {
+      background: #d4edda;
+      color: #155724;
+      font-weight: 600;
+    }
+
+    .output-line.question {
+      color: #004085;
+    }
+
+    .output-line.system {
+      color: #6c757d;
+      font-style: italic;
+    }
+
+    .output-line.error {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    .output-line.trace {
+      color: #dc3545;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+    }
+
+    .trace-control {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 15px;
+      padding: 10px;
+      background: #f8f9fa;
+      border-radius: 6px;
+    }
+
+    .trace-control label {
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+      cursor: pointer;
+    }
+
+    .trace-control input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+
+    .status-bar {
+      background: white;
+      border-radius: 10px;
+      padding: 15px 20px;
+      margin-top: 20px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+    }
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #28a745;
+      animation: pulse 2s infinite;
+    }
+
+    .status-dot.idle {
+      background: #6c757d;
+      animation: none;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .kb-info {
+      font-size: 13px;
+      color: #666;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .editor-container {
+      margin-top: 20px;
+    }
+
+    .editor-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .editor-toolbar h3 {
+      margin: 0;
+      font-size: 16px;
+      color: #333;
+    }
+
+    .editor-status {
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      background: #e0e0e0;
+      color: #666;
+    }
+
+    .editor-status.modified {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .editor-status.compiled {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .source-editor {
+      width: 100%;
+      min-height: 400px;
+      max-height: 600px;
+      padding: 15px;
+      border: 2px solid #e0e0e0;
+      border-radius: 6px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      resize: vertical;
+      background: #f8f9fa;
+    }
+
+    .source-editor:focus {
+      outline: none;
+      border-color: #667eea;
+      background: white;
+    }
+
+    .source-editor.modified {
+      border-color: #ffc107;
+      background: #fffdf5;
+    }
+
+    .btn-recompile {
+      background: #ffc107;
+      color: #333;
+      padding: 8px 16px;
+      font-size: 13px;
+    }
+
+    .btn-recompile:hover:not(:disabled) {
+      background: #e0a800;
+    }
+
+    .btn-recompile:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-save {
+      background: #17a2b8;
+      color: white;
+      padding: 8px 16px;
+      font-size: 13px;
+      margin-right: 10px;
+    }
+
+    .btn-load {
+      background: #6c757d;
+      color: white;
+      padding: 8px 16px;
+      font-size: 13px;
+      margin-right: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>MicroExpert JavaScript</h1>
+      <p>A rule-based expert system using backward chaining inference. Select a knowledge base and answer questions to reach conclusions.</p>
+    </div>
+
+    <div class="main-panel">
+      <div class="panel">
+        <h2>Knowledge Base</h2>
+        <div class="kb-selector">
+          <label for="kbSelect">Select a Knowledge Base:</label>
+          <select id="kbSelect">
+            <option value="">-- Select Knowledge Base --</option>
+            <option value="animal">Animal Expert</option>
+            <option value="izzat">Izzat (Honor)</option>
+          </select>
+        </div>
+
+        <button id="startBtn" class="btn-start" disabled>Start Expert System</button>
+        <button id="resetBtn" class="btn-reset hidden">Reset</button>
+
+        <div class="trace-control">
+          <label>
+            <input type="checkbox" id="traceCheckbox" checked>
+            Enable trace
+          </label>
+        </div>
+
+        <div class="kb-info" id="kbInfo"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Questions</h2>
+        <div id="questionArea" class="question-area">
+          <p style="color: #666; font-style: italic;">Select a knowledge base and click "Start" to begin...</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top: 20px;">
+      <h2>Output & Conclusions</h2>
+      <div id="outputArea" class="output-area"></div>
+    </div>
+
+    <div class="panel editor-container">
+      <div class="editor-toolbar">
+        <h3>Knowledge Base Source Code</h3>
+        <div>
+          <button id="loadBtn" class="btn-load" disabled>Load to Editor</button>
+          <button id="saveBtn" class="btn-save" disabled>Save as Preset</button>
+          <span id="editorStatus" class="editor-status">No knowledge base loaded</span>
+        </div>
+      </div>
+      <textarea id="sourceEditor" class="source-editor" placeholder="Select a knowledge base above or type your own rules here..."></textarea>
+      <div style="margin-top: 10px;">
+        <button id="recompileBtn" class="btn-recompile" disabled>Recompile & Run</button>
+        <span style="margin-left: 15px; font-size: 12px; color: #666;">Edit the source code above and click to recompile</span>
+      </div>
+    </div>
+
+    <div class="status-bar">
+      <div class="status-indicator">
+        <div id="statusDot" class="status-dot idle"></div>
+        <span id="statusText">Ready</span>
+      </div>
+      <div id="stats"></div>
+    </div>
+  </div>
+
+  <script src="expert.js"></script>
+  <script>
+    // Expert System Controller
+    class ExpertController {
+      constructor() {
+        this.expert = null;
+        this.currentQuestion = null;
+        this.questionCount = 0;
+        this.conclusionCount = 0;
+
+        // DOM elements
+        this.kbSelect = document.getElementById('kbSelect');
+        this.startBtn = document.getElementById('startBtn');
+        this.resetBtn = document.getElementById('resetBtn');
+        this.questionArea = document.getElementById('questionArea');
+        this.outputArea = document.getElementById('outputArea');
+        this.statusDot = document.getElementById('statusDot');
+        this.statusText = document.getElementById('statusText');
+        this.kbInfo = document.getElementById('kbInfo');
+        this.stats = document.getElementById('stats');
+        this.sourceEditor = document.getElementById('sourceEditor');
+        this.editorStatus = document.getElementById('editorStatus');
+        this.loadBtn = document.getElementById('loadBtn');
+        this.saveBtn = document.getElementById('saveBtn');
+        this.recompileBtn = document.getElementById('recompileBtn');
+        this.traceCheckbox = document.getElementById('traceCheckbox');
+
+        // Track if source has been modified
+        this.originalSource = '';
+        this.currentKBKey = null;
+
+        // Knowledge base definitions
+        this.knowledgeBases = {
+          animal: {
+            name: 'Animal Expert',
+            description: 'Identify animals based on their characteristics',
+            content: `Animal Expert
+
+if animal is mammal
+then animal has warm blood
+
+if animal has feathers
+andif animal lays eggs
+then animal is bird
+
+ifnot animal is bird
+then animal is mammal
+
+if animal is mammal
+and animal eats meat
+then animal is carnivore
+
+if animal is carnivore
+and animal has pointed teeth
+and animal has retractable claws
+and animal has forward pointing eyes
+then animal is cat
+
+if animal is mammal
+andnot animal is carnivore
+and animal has hoofs
+then animal is ungulate
+
+if animal is cat
+and animal has tawny color
+and animal has dark spots
+thenhyp animal is cheeta
+
+if animal is cat
+and animal has tawny color
+and animal has black stripes
+thenhyp animal is tiger
+
+if animal is cat
+and animal is small
+and animal is domesticated
+and animal mostly catches mice
+and animal loves warm laps
+thenhyp animal is a house cat
+
+if animal is ungulate
+and animal has long neck
+and animal has long legs
+and animal has dark spots
+thenhyp animal is giraffe
+
+if animal is bird
+andnot animal flies
+andnot animal swims
+and animal has long neck
+and animal is black and white
+thenhyp animal is ostrich
+
+if animal is ungulate
+and animal has black stripes
+thenhyp animal is zebra
+
+if animal is ungulate
+and animal has horns
+thenhyp animal is cow
+
+if animal is bird
+andnot animal flies
+and animal swims
+and animal is black and white
+thenhyp animal is penguin
+
+if animal is bird
+and animal flies
+and animal flies well
+and animal has webbed feet
+andnot animal has flat bill
+thenhyp animal is albatros
+
+if animal is bird
+and animal flies
+and animal flies well
+and animal has webbed feet
+and animal has flat bill
+thenhyp animal is duck
+
+ifnot animal is cheeta
+ifnot animal is tiger
+ifnot animal is a house cat
+ifnot animal is giraffe
+ifnot animal is ostrich
+ifnot animal is zebra
+ifnot animal is penguin
+ifnot animal is albatros
+ifnot animal is duck
+ifnot animal is cow
+thenhyp this animal is not within my knowledge`
+          },
+          izzat: {
+            name: 'Izzat (Honor System)',
+            description: 'Analyze concepts of honor and respect',
+            content: `Izzat
+
+if children are obedient
+then respect is high
+
+if women creep
+then izzit is not high
+
+ifnot women creep
+then women observe purda
+
+if women observe purda
+then women don't creep
+
+if izzit is high
+thenhyp honour is great
+
+if women don't creep
+and respect is high
+and women observe purda
+then izzit is high`
+          }
+        };
+
+        this.init();
+      }
+
+      init() {
+        // Event listeners
+        this.kbSelect.addEventListener('change', () => this.onKBChange());
+        this.startBtn.addEventListener('click', () => this.start());
+        this.resetBtn.addEventListener('click', () => this.reset());
+        this.loadBtn.addEventListener('click', () => this.loadToEditor());
+        this.saveBtn.addEventListener('click', () => this.saveAsPreset());
+        this.recompileBtn.addEventListener('click', () => this.recompile());
+        this.sourceEditor.addEventListener('input', () => this.onEditorChange());
+      }
+
+      onKBChange() {
+        const kbKey = this.kbSelect.value;
+        if (kbKey) {
+          const kb = this.knowledgeBases[kbKey];
+          this.kbInfo.textContent = `${kb.name}: ${kb.description}`;
+          this.startBtn.disabled = false;
+          this.loadBtn.disabled = false;
+          this.currentKBKey = kbKey;
+        } else {
+          this.kbInfo.textContent = '';
+          this.startBtn.disabled = true;
+          this.loadBtn.disabled = true;
+          this.currentKBKey = null;
+        }
+      }
+
+      loadToEditor() {
+        const kbKey = this.kbSelect.value;
+        if (!kbKey) return;
+
+        const kb = this.knowledgeBases[kbKey];
+        this.sourceEditor.value = kb.content;
+        this.originalSource = kb.content;
+        this.sourceEditor.classList.remove('modified');
+        this.editorStatus.textContent = 'Loaded: ' + kb.name;
+        this.editorStatus.className = 'editor-status compiled';
+        this.recompileBtn.disabled = false;
+      }
+
+      onEditorChange() {
+        if (this.sourceEditor.value !== this.originalSource) {
+          this.sourceEditor.classList.add('modified');
+          this.editorStatus.textContent = 'Modified - click "Recompile & Run" to test changes';
+          this.editorStatus.className = 'editor-status modified';
+        } else {
+          this.sourceEditor.classList.remove('modified');
+          this.editorStatus.textContent = 'Loaded: ' + (this.currentKBKey ? this.knowledgeBases[this.currentKBKey].name : 'Custom');
+          this.editorStatus.className = 'editor-status compiled';
+        }
+      }
+
+      saveAsPreset() {
+        const name = prompt('Enter a name for this knowledge base preset:');
+        if (!name) return;
+
+        const key = name.toLowerCase().replace(/\s+/g, '_');
+        const description = prompt('Enter a description:', 'Custom knowledge base');
+
+        this.knowledgeBases[key] = {
+          name: name,
+          description: description || 'Custom knowledge base',
+          content: this.sourceEditor.value
+        };
+
+        // Add to dropdown
+        const option = document.createElement('option');
+        option.value = key;
+        option.textContent = name;
+        this.kbSelect.appendChild(option);
+
+        // Select the new preset
+        this.kbSelect.value = key;
+        this.onKBChange();
+
+        this.originalSource = this.sourceEditor.value;
+        this.sourceEditor.classList.remove('modified');
+        this.editorStatus.textContent = 'Saved as preset: ' + name;
+        this.editorStatus.className = 'editor-status compiled';
+
+        this.addOutput('[System] Saved as new preset: ' + name, 'system');
+      }
+
+      async recompile() {
+        const source = this.sourceEditor.value.trim();
+        if (!source) {
+          alert('Please enter some source code first.');
+          return;
+        }
+
+        // Clear output
+        this.outputArea.innerHTML = '';
+        this.questionCount = 0;
+        this.conclusionCount = 0;
+
+        // Create new expert system
+        this.expert = createExpertSystem({
+          verbose: true
+        });
+
+        // Set up callbacks
+        this.expert.onAskQuestion = (question, explanation) => {
+          this.addTrace('Considering: ' + question);
+          return this.askQuestion(question, explanation);
+        };
+
+        this.expert.onConclusion = (element) => {
+          this.conclusionCount++;
+          this.addTrace('Proven: ' + element.text);
+          this.addOutput('CONCLUSION: ' + element.text, 'conclusion');
+        };
+
+        this.expert.onProgress = (message) => {
+          this.addOutput('[System] ' + message, 'system');
+        };
+
+        this.expert.onError = (message) => {
+          this.addOutput('ERROR: ' + message, 'error');
+        };
+
+        // Set trace callback
+        this.expert.onTrace = (message) => {
+          this.addTrace(message);
+        };
+
+        // Compile and run
+        this.setStatus('running', 'Compiling modified knowledge base...');
+        try {
+          this.expert.compileKnowledgeBase(source);
+          this.addOutput('Knowledge base compiled successfully from editor', 'system');
+          this.addOutput('Starting inference...', 'system');
+          this.addOutput('', '');
+
+          // Update UI state
+          this.startBtn.classList.add('hidden');
+          this.resetBtn.classList.remove('hidden');
+          this.kbSelect.disabled = true;
+          this.loadBtn.disabled = true;
+
+          this.editorStatus.textContent = 'Compiled successfully';
+          this.editorStatus.className = 'editor-status compiled';
+
+          // Run inference
+          this.setStatus('running', 'Running inference...');
+          await this.expert.run();
+
+          if (this.conclusionCount === 0) {
+            this.addOutput('No conclusions reached.', 'system');
+          }
+
+          this.addOutput('', '');
+          this.addOutput('Inference complete. Asked ' + this.questionCount + ' questions, reached ' + this.conclusionCount + ' conclusion(s).', 'system');
+
+          this.showDoneMessage();
+          this.setStatus('idle', 'Complete');
+        } catch (error) {
+          this.addOutput('Error: ' + error.message, 'error');
+          this.setStatus('idle', 'Error');
+          this.editorStatus.textContent = 'Compilation error';
+          this.editorStatus.className = 'editor-status modified';
+        }
+
+        this.updateStats();
+      }
+
+      async start() {
+        const kbKey = this.kbSelect.value;
+        if (!kbKey) return;
+
+        const kb = this.knowledgeBases[kbKey];
+
+        // Clear output
+        this.outputArea.innerHTML = '';
+        this.questionCount = 0;
+        this.conclusionCount = 0;
+
+        // Create expert system
+        this.expert = createExpertSystem({
+          verbose: true
+        });
+
+        // Set up callbacks
+        this.expert.onAskQuestion = (question, explanation) => {
+          this.addTrace('Considering: ' + question);
+          return this.askQuestion(question, explanation);
+        };
+
+        this.expert.onConclusion = (element) => {
+          this.conclusionCount++;
+          this.addTrace('Proven: ' + element.text);
+          this.addOutput(`CONCLUSION: ${element.text}`, 'conclusion');
+        };
+
+        this.expert.onProgress = (message) => {
+          this.addOutput(`[System] ${message}`, 'system');
+        };
+
+        this.expert.onError = (message) => {
+          this.addOutput(`ERROR: ${message}`, 'error');
+        };
+
+        // Set trace callback
+        this.expert.onTrace = (message) => {
+          this.addTrace(message);
+        };
+
+        // Compile and run
+        this.setStatus('running', 'Compiling knowledge base...');
+        this.expert.compileKnowledgeBase(kb.content);
+
+        this.addOutput('Knowledge base loaded: ' + kb.name, 'system');
+        this.addOutput('Starting inference...', 'system');
+        this.addOutput('', '');
+
+        // Switch buttons
+        this.startBtn.classList.add('hidden');
+        this.resetBtn.classList.remove('hidden');
+        this.kbSelect.disabled = true;
+
+        // Run inference
+        this.setStatus('running', 'Running inference...');
+        try {
+          await this.expert.run();
+
+          if (this.conclusionCount === 0) {
+            this.addOutput('No conclusions reached.', 'system');
+          }
+
+          this.addOutput('', '');
+          this.addOutput(`Inference complete. Asked ${this.questionCount} questions, reached ${this.conclusionCount} conclusion(s).`, 'system');
+
+          this.showDoneMessage();
+          this.setStatus('idle', 'Complete');
+        } catch (error) {
+          this.addOutput(`Error: ${error.message}`, 'error');
+          this.setStatus('idle', 'Error');
+        }
+
+        this.updateStats();
+      }
+
+      askQuestion(question, explanation) {
+        return new Promise((resolve) => {
+          this.questionCount++;
+          this.addOutput(`Q: ${question}`, 'question');
+
+          this.currentQuestion = { resolve, explanation };
+
+          // Show question UI
+          this.questionArea.innerHTML = `
+            <div class="question-text">${question}</div>
+            ${explanation ? `<div class="explanation">${explanation}</div>` : ''}
+            <div class="button-group">
+              <button class="btn-yes" onclick="controller.answer(true)">Yes</button>
+              <button class="btn-no" onclick="controller.answer(false)">No</button>
+              <button class="btn-why" onclick="controller.showWhy()">Why?</button>
+            </div>
+          `;
+
+          this.updateStats();
+        });
+      }
+
+      answer(value) {
+        if (this.currentQuestion) {
+          const answerText = value ? 'Yes' : 'No';
+          this.addOutput('A: ' + answerText, 'system');
+          this.addOutput('', '');
+          this.currentQuestion.resolve(value);
+          this.currentQuestion = null;
+        }
+      }
+
+      showWhy() {
+        if (this.currentQuestion && this.currentQuestion.explanation) {
+          alert('WHY am I asking this?\n\n' + this.currentQuestion.explanation);
+        }
+      }
+
+      addOutput(text, className = '') {
+        const line = document.createElement('div');
+        line.className = 'output-line ' + className;
+        line.textContent = text;
+        this.outputArea.appendChild(line);
+        this.outputArea.scrollTop = this.outputArea.scrollHeight;
+      }
+
+      addTrace(message) {
+        if (this.traceCheckbox.checked) {
+          this.addOutput('TRACE: ' + message, 'trace');
+        }
+      }
+
+      showDoneMessage() {
+        this.questionArea.innerHTML = `
+          <p style="color: #28a745; font-weight: 600;">✓ Inference Complete</p>
+          <p style="color: #666;">The expert system has finished analyzing the knowledge base.</p>
+          <p style="color: #666; margin-top: 10px;">Check the output panel above for conclusions.</p>
+        `;
+      }
+
+      setStatus(state, text) {
+        this.statusText.textContent = text;
+        if (state === 'running') {
+          this.statusDot.classList.remove('idle');
+        } else {
+          this.statusDot.classList.add('idle');
+        }
+      }
+
+      updateStats() {
+        this.stats.textContent = `Questions: ${this.questionCount} | Conclusions: ${this.conclusionCount}`;
+      }
+
+      reset() {
+        this.expert = null;
+        this.currentQuestion = null;
+        this.questionCount = 0;
+        this.conclusionCount = 0;
+
+        this.questionArea.innerHTML = '<p style="color: #666; font-style: italic;">Select a knowledge base and click "Start" to begin...</p>';
+        this.outputArea.innerHTML = '';
+
+        this.startBtn.classList.remove('hidden');
+        this.resetBtn.classList.add('hidden');
+        this.kbSelect.disabled = false;
+        this.loadBtn.disabled = !this.currentKBKey;
+
+        this.setStatus('idle', 'Ready');
+        this.updateStats();
+      }
+    }
+
+    // Initialize the controller
+    const controller = new ExpertController();
+  </script>
+</body>
+</html>
