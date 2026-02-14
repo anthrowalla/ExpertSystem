@@ -307,6 +307,7 @@ class ExpertSystem {
   async run() {
     this.log('Starting inference...');
     this.conclusions = [];
+    this.displayedConclusions = new Set(); // Track which conclusions have been displayed
 
     this.trace('=== Starting inference ===');
     this.trace(`Total goals to prove: ${this.goalElements.length}`);
@@ -320,7 +321,14 @@ class ExpertSystem {
 
       if (result === TRUTH.TRUE) {
         this.conclusions.push(goal);
-        this.notifyConclusion(goal);
+        // Only notify if we haven't already displayed this conclusion
+        const conclusionKey = goal.text.toLowerCase();
+        if (!this.displayedConclusions.has(conclusionKey)) {
+          this.displayedConclusions.add(conclusionKey);
+          this.notifyConclusion(goal);
+        } else {
+          this.trace(`Conclusion already displayed: ${goal.text}`);
+        }
       } else if (result === TRUTH.UNKNOWN) {
         this.trace(`Goal "${goal.text}" could not be determined (UNKNOWN)`);
       }
