@@ -38,10 +38,10 @@ const RULE_TYPES = {
 const RULE_TYPES = {
 	WHENNOT: 'ANT|NOT',
 	WHEN: 'ANT',
-	THENRUNHYP: 'CON',
+	THENRUNHYP: 'CON|HYP',
 	THENRUN: 'CON',
 	THENNOT: 'CON|NOT',
-	THENHYP: 'CON',
+	THENHYP: 'CON|HYP',
 	THENASKNOT: 'CON|NOT',
 	THENASK: 'CON',
 	THEN: 'CON',
@@ -56,10 +56,10 @@ const RULE_TYPES = {
 	ASKNOT: 'ANT|NOT',
 	ASK: 'ANT',
 	ANDWHEN: 'ANT',
-	ANDTHENRUNHYP: 'CON',
+	ANDTHENRUNHYP: 'CON|HYP',
 	ANDTHENRUN: 'CON',
 	ANDTHENNOT: 'CON|NOT',
-	ANDTHENHYP: 'CON',
+	ANDTHENHYP: 'CON|HYP',
 	ANDTHEN: 'CON',
 	ANDRUN: 'ANT',
 	ANDNOTRUN: 'ANT|NOT',
@@ -133,6 +133,7 @@ class ExpertSystem {
     this.goalElements = [];  // Goals to prove
     this.conclusions = [];   // Proven conclusions
     this.dependencyStack = [];  // Track inference chain for "Why" explanations
+    this.hypothesisReached = false;  // Track if a HYP conclusion has been reached
 
     // Callbacks for UI interaction
     this.onAskQuestion = null;      // Called when system needs to ask user a question
@@ -308,34 +309,154 @@ class ExpertSystem {
     this.log('Starting inference...');
     this.conclusions = [];
     this.displayedConclusions = new Set(); // Track which conclusions have been displayed
+    this.hypothesisReached = false; // Reset hypothesis flag
 
     this.trace('=== Starting inference ===');
     this.trace(`Total goals to prove: ${this.goalElements.length}`);
 
-    for (let i = 0; i < this.goalElements.length; i++) {
-      const goal = this.goalElements[i];
-      this.trace(`--- Goal ${i + 1}: "${goal.text}" (type: ${goal.ruleType}) ---`);
-      this.dependencyStack = [];
+    let passNumber = 1;
+    let maxPasses = 10; // Prevent infinite loops
+    let previousUnknownCount = -1;
 
-      const result = await this.prove(goal);
+    while (passNumber <= maxPasses) {
+      this.trace(`=== Pass ${passNumber} ===`);
+      const unknownGoals = [];
 
-      if (result === TRUTH.TRUE) {
-        this.conclusions.push(goal);
-        // Only notify if we haven't already displayed this conclusion
-        const conclusionKey = goal.text.toLowerCase();
-        if (!this.displayedConclusions.has(conclusionKey)) {
-          this.displayedConclusions.add(conclusionKey);
-          this.notifyConclusion(goal);
-        } else {
-          this.trace(`Conclusion already displayed: ${goal.text}`);
+      for (let i = 0; i < this.goalElements.length; i++) {
+        // Stop processing if a hypothesis has been reached
+        if (this.hypothesisReached) {
+          this.trace(`Hypothesis reached, stopping further goal processing`);
+          break;
         }
-      } else if (result === TRUTH.UNKNOWN) {
-        this.trace(`Goal "${goal.text}" could not be determined (UNKNOWN)`);
+
+        const goal = this.goalElements[i];
+        const key = goal.text.toLowerCase();
+
+        // Skip if already proven
+        if (this.facts.has(key)) {
+          const knownValue = this.facts.get(key);
+          if (knownValue === TRUTH.TRUE || knownValue === TRUTH.FALSE) {
+            this.trace(`--- Goal ${i + 1}: "${goal.text}" - already ${knownValue === TRUTH.TRUE ? 'TRUE' : 'FALSE'} ---`);
+            continue;
+          }
+        }
+
+        this.trace(`--- Goal ${i + 1}: "${goal.text}" (type: ${goal.ruleType}) ---`);
+        this.dependencyStack = [];
+
+        const result = await this.prove(goal);
+
+        if (result === TRUTH.TRUE) {
+          this.conclusions.push(goal);
+          // Only notify if we haven't already displayed this conclusion
+          const conclusionKey = goal.text.toLowerCase();
+          if (!this.displayedConclusions.has(conclusionKey)) {
+            this.displayedConclusions.add(conclusionKey);
+
+            // Check if this is a hypothesis (HYP) conclusion
+            const hasHyp = goal.ruleType && goal.ruleType.includes('HYP');
+            if (hasHyp) {
+              this.trace(`HYPOTHESIS: ${goal.text}`);
+              this.hypothesisReached = true;
+              // Create a modified element for notification with "Conclude: " prefix
+              const hypElement = new Element(goal.type, `Conclude: ${goal.text}`, goal.ruleType);
+              this.notifyConclusion(hypElement);
+            } else {
+              this.notifyConclusion(goal);
+            }
+          } else {
+            this.trace(`Conclusion already displayed: ${goal.text}`);
+          }
+        } else if (result === TRUTH.UNKNOWN) {
+          this.trace(`Goal "${goal.text}" could not be determined (UNKNOWN)`);
+          unknownGoals.push(goal);
+        }
       }
+
+      // Break out of while loop if hypothesis was reached
+      if (this.hypothesisReached) {
+        this.trace(`Hypothesis conclusion reached, ending inference`);
+        break;
+      }
+
+      // Check if we've made progress or if all goals are resolved
+      if (unknownGoals.length === 0) {
+        this.trace(`All goals resolved after pass ${passNumber}`);
+        break;
+      }
+
+      // Check if we're stuck (same number of unknowns as before)
+      if (unknownGoals.length === previousUnknownCount) {
+        this.trace(`Stuck at ${unknownGoals.length} unknown goals, trying proactive questioning`);
+
+        // Find the unknown consequent that appears most often as an antecedent
+        const mostReferenced = this.findMostReferencedUnknown(unknownGoals);
+
+        if (mostReferenced) {
+          this.trace(`Asking about most referenced unknown: "${mostReferenced.text}" (appears ${mostReferenced.count} times as antecedent)`);
+
+          // Create a temporary element to ask about
+          const tempElement = new Element(ELEMENT_TYPE.ANT, mostReferenced.text, 'ASK');
+          const answer = await this.askUser(tempElement);
+          const answerKey = mostReferenced.text.toLowerCase();
+
+          // Set the fact
+          this.facts.set(answerKey, answer);
+          this.trace(`User answered: "${mostReferenced.text}" is ${answer === TRUTH.TRUE ? 'TRUE' : 'FALSE'}`);
+
+          // Continue to next pass to use this new information
+          previousUnknownCount = unknownGoals.length;
+          passNumber++;
+          continue;
+        } else {
+          this.trace(`No more questions to ask, ending inference`);
+          break;
+        }
+      }
+
+      previousUnknownCount = unknownGoals.length;
+      passNumber++;
     }
 
     this.log(`Inference complete. Found ${this.conclusions.length} conclusions.`);
     return this.conclusions;
+  }
+
+  /**
+   * Find the unknown consequent that appears most frequently as an antecedent
+   */
+  findMostReferencedUnknown(unknownGoals) {
+    const counts = new Map();
+
+    // Count how many times each unknown goal appears as an antecedent
+    for (const goal of unknownGoals) {
+      const key = goal.text.toLowerCase();
+
+      // Count occurrences in all antecedents
+      const antecedentCount = this.allAntecedents.filter(a => a.text.toLowerCase() === key).length;
+
+      if (antecedentCount > 0) {
+        counts.set(key, {
+          text: goal.text,
+          count: antecedentCount,
+          element: goal
+        });
+      }
+    }
+
+    // Find the one with the highest count
+    let maxCount = 0;
+    let mostReferenced = null;
+
+    for (const [key, data] of counts.entries()) {
+      this.trace(`Unknown "${data.text}" appears ${data.count} times as antecedent`);
+      if (data.count > maxCount) {
+        maxCount = data.count;
+        mostReferenced = data;
+      }
+    }
+
+    return mostReferenced;
   }
 
   /**
@@ -388,6 +509,7 @@ class ExpertSystem {
           // Set each consequent based on CASE 3 and CASE 4
           for (const con of rule.consequents) {
             const hasNot = con.ruleType.includes('NOT');
+            const hasHyp = con.ruleType.includes('HYP');
 
             // CASE 3: Consequent proposition is assigned true if all antecedent conditions are true AND keyword does NOT contain "NOT"
             // CASE 4: Consequent proposition is assigned false if all antecedent conditions are true AND keyword contains "NOT"
@@ -396,6 +518,29 @@ class ExpertSystem {
 
             this.trace(`Setting consequent: ${con.text} (${con.ruleType}) to ${truthValue === TRUTH.TRUE ? 'TRUE' : 'FALSE'}`);
             this.facts.set(conKey, truthValue);
+
+            // If this consequent is TRUE and not already displayed, add it to conclusions
+            if (truthValue === TRUTH.TRUE) {
+              const conclusionKey = con.text.toLowerCase();
+              if (!this.displayedConclusions.has(conclusionKey)) {
+                this.displayedConclusions.add(conclusionKey);
+                this.conclusions.push(con);
+
+                // Check if this is a hypothesis (HYP) conclusion
+                if (hasHyp) {
+                  this.trace(`HYPOTHESIS: ${con.text}`);
+                  this.hypothesisReached = true;
+                  // Create a modified element for notification with "Conclude: " prefix
+                  const hypElement = new Element(con.type, `Conclude: ${con.text}`, con.ruleType);
+                  this.notifyConclusion(hypElement);
+                } else {
+                  this.trace(`CONCLUSION: ${con.text}`);
+                  this.notifyConclusion(con);
+                }
+              } else {
+                this.trace(`Conclusion already tracked: ${con.text}`);
+              }
+            }
 
             // Update element truthValue if this is the element we're proving
             if (con.text.toLowerCase() === key) {
